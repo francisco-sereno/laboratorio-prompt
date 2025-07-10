@@ -28,6 +28,19 @@ Estructura: HTML5, CSS3, y JavaScript (ECMAScript 6+).
 
 Modularidad: El código está separado en archivos de estructura (index.html), estilos (css/styles.css), configuración (js/config.js), lógica principal (js/main.js) y comunicación con el LMS (js/scorm_api.js) para facilitar su mantenimiento y escalabilidad.
 
+taller_prompt_m2/
+├── imsmanifest.xml
+├── metadata.xml
+├── index.html
+├── README.md
+├── LICENSE.md
+├── js/
+│   ├── scorm\_api.js
+│   ├── config.js
+│   └── main.js
+└── css/
+    └── styles.css
+
 Conectividad: Utiliza la API de OpenAI para conectarse al modelo gpt-4o-mini. Se requiere una clave de API válida para su funcionamiento.
 
 Seguimiento:
