@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio Interactivo de Prompts</title>
+
+    <!-- Dependencias de Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <style>
+        /* Diseño Profesional Marino - v7.0 (OpenAI GPT-4o-mini) */
+        :root {
+            --primary-color: #0d2c54;
+            --primary-color-light: #1a5aab;
+            --secondary-color: #6c757d;
+            --background-main: #f0f2f5;
+            --background-panel: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --border-color: #e2e8f0;
+            --success-color: #1e8449;
+            --success-background: #e8f8f5;
+            --warning-color: #d68910;
+            --warning-background: #fef9e7;
+            --error-color: #ef4444;
+            --error-background: #fef2f2;
+            --info-light: #eef2ff;
+            --radius: 0.5rem;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --font-family: 'Montserrat', sans-serif;
+        }
+
+        html { font-size: 16px; }
+
+        body {
+            background-color: var(--background-main);
+            margin: 0;
+            padding: 1rem;
+            font-family: var(--font-family);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .widget-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            background-color: var(--background-panel);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .widget-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-color-light));
+            color: white;
+            gap: 1rem;
+        }
+        .widget-header-content { flex-grow: 1; }
+        .header-right-panel { display: flex; align-items: center; gap: 1rem; }
+        .header-actions { display: flex; gap: 0.5rem; border-left: 1px solid rgba(255, 255, 255, 0.2); padding-left: 1rem; }
+        .header-button { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s ease; }
+        .header-button:hover { background-color: rgba(255, 255, 255, 0.2); }
+        
+        .widget-title { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .widget-subtitle { font-size: 0.9rem; opacity: 0.8; margin: 0.25rem 0 0; }
+        
+        .instructions-panel { 
+            background-color: var(--info-light); 
+            padding: 1.5rem 2rem; 
+            border-bottom: 1px solid var(--border-color); 
+            border-left: 5px solid var(--primary-color-light); 
+        }
+        .instructions-panel h3 { margin: 0 0 1rem 0; color: var(--primary-color); font-size: 1.1rem; }
+        .instructions-list { margin: 0; padding-left: 1.5rem; font-size: 0.95rem; line-height: 1.7; color: var(--text-secondary); }
+        .instructions-list li { margin-bottom: 0.5rem; }
+
+        .widget-status-indicators { display: flex; gap: 1.5rem; padding: 0.5rem 1rem; }
+        .status-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 500; color: white; }
+        .status-icon, .footer-icon, .paw-icon { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: 24px; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; vertical-align: middle; }
+        .paw-icon { margin-right: 8px; font-size: 1.2em; }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; transition: all 0.3s ease; border: 2px solid var(--primary-color); }
+        .status-dot.connected { background-color: #34d399; }
+        .status-dot.disconnected { background-color: var(--error-color); }
+        .status-dot.connecting { background-color: var(--warning-color); animation: pulse 1.5s infinite; }
+        
+        .widget-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background-color: var(--background-main); flex-grow: 1; }
+        .panel { padding: 2rem; background-color: var(--background-panel); }
+        .creation-panel { border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .panel-title { font-size: 1.25rem; font-weight: 600; margin-top: 0; margin-bottom: 1.5rem; display: flex; align-items: center; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group:last-of-type { flex-grow: 1; display: flex; flex-direction: column; }
+        .form-group label { display: flex; align-items: center; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-secondary); }
+        
+        .form-select, .form-textarea { width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius); border: 1px solid var(--border-color); font-family: var(--font-family); font-size: 1rem; background-color: white; transition: all 0.2s ease; box-sizing: border-box; }
+        .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary-color-light); box-shadow: 0 0 0 3px rgba(26, 90, 171, 0.2); }
+        .form-textarea { flex-grow: 1; min-height: 200px; resize: vertical; }
+        
+        .button { width: 100%; margin-top: 1.5rem; padding: 0.85rem 1.5rem; border: 1px solid transparent; border-radius: var(--radius); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-align: center; display: flex; justify-content: center; align-items: center; }
+        .button .paw-icon { margin-right: 10px; }
+        .button-primary { background-color: var(--primary-color); color: white; }
+        .button-primary:hover { background-color: var(--primary-color-light); transform: translateY(-2px); }
+        .button-secondary { background-color: var(--background-panel); color: var(--primary-color); border-color: var(--primary-color); }
+        .button-secondary:hover { background-color: #eef2ff; }
+        .button:disabled { opacity: 0.6; cursor: not-allowed; background-color: var(--secondary-color) !important; color: white !important; border-color: transparent !important; transform: none; }
+
+        .feedback-container { min-height: 450px; }
+        .feedback-placeholder { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); border: 2px dashed var(--border-color); border-radius: var(--radius); display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; box-sizing: border-box; font-style: italic; }
+        
+        .feedback-content h3 { color: var(--primary-color); font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--background-main); display: flex; align-items: center; }
+        .feedback-content h3:first-child { margin-top: 0; }
+        .initial-feedback, .corrected-prompt-wrapper, .explanation, .error-message, .suggested-reading-wrapper { padding: 1rem; border-radius: var(--radius); }
+        .initial-feedback { background-color: var(--warning-background); border: 1px solid var(--warning-color); }
+        .corrected-prompt-wrapper { background-color: var(--success-background); border: 1px solid var(--success-color); font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; }
+        .explanation { background-color: #f8f9fa; border: 1px solid var(--border-color); }
+        .error-message { background-color: var(--error-background); border: 1px solid var(--error-color); color: var(--error-color); font-weight: 500;}
+        .initial-feedback ul, .explanation ul { padding-left: 20px; margin: 0; }
+        .initial-feedback ul { list-style-type: '→ '; }
+        .explanation ul { list-style-type: '✓ '; }
+        .initial-feedback li, .explanation li { margin-bottom: 0.5rem; line-height: 1.6; }
+        
+        .suggested-reading-wrapper { background-color: var(--info-light); border: 1px solid var(--primary-color-light); }
+        .suggested-reading-wrapper p { margin-top: 0; margin-bottom: 0.5rem; }
+        .suggested-reading-wrapper em { font-size: 0.85rem; color: var(--text-secondary); }
+        .suggested-reading-wrapper a { font-weight: 600; color: var(--primary-color); text-decoration: none; display: block; margin-top: 0.5rem;}
+        .suggested-reading-wrapper a:hover { text-decoration: underline; }
+
+        .action-buttons { margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        .modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(10, 25, 47, 0.6);backdrop-filter:blur(4px); animation: fadeIn 0.3s ease-out; }
+        .modal-content{background-color:#fff;margin:8% auto;padding:2rem;border:1px solid var(--border-color);width:90%;max-width:700px;border-radius:var(--radius);position:relative;box-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); animation: slideIn 0.4s ease-out; }
+        .modal-close{color:#9ca3af;position:absolute;top:1rem;right:1rem;font-size:1.5rem;font-weight:700;cursor:pointer}.modal-close:hover{color:var(--text-primary)}
+        .modal-title{margin:0 0 1rem; font-family: var(--font-family); font-size: 1.25rem;}
+        .modal-body { line-height: 1.7; max-height: 70vh; overflow-y: auto; }
+        .modal-body .info-section { background-color: var(--background-main); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+        .modal-body .info-section h4 { border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-top: 0; }
+        .modal-body .info-section.author-info { background-color: var(--info-light); border-color: var(--primary-color-light); text-align: center; }
+        .modal-body a { color: var(--primary-color-light); font-weight: 500; text-decoration: none; }
+        .modal-body a:hover { text-decoration: underline; opacity: 0.8; }
+        .modal-body ul { padding-left: 1.25rem; }
+        .modal-body li { margin-bottom: 0.75rem; }
+        
+        .widget-footer { background-color: #0a2342; padding: 1.5rem 2rem; }
+        .footer-content { display: flex; align-items: center; gap: 2rem; }
+        .footer-logo img { height: 60px; width: auto; display: block; }
+        .footer-credits { text-align: left; color: rgba(255, 255, 255, 0.7); font-size: 0.8rem; line-height: 1.7; flex-grow: 1; }
+        .footer-line-1 { font-size: 0.9rem; font-weight: 500; color: white; margin: 0 0 1rem 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+        .footer-icon { font-size: 1.1em; vertical-align: middle; margin-top: -0.2em; }
+        .footer-details { opacity: 0.8; }
+        
+        .loading-icon-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        .typing-indicator { display: flex; gap: 8px; }
+        .typing-indicator span { width: 12px; height: 12px; border-radius: 50%; background-color: var(--primary-color); animation: typing-pulse 1.4s infinite both; }
+        @keyframes typing-pulse { 0%, 80%, 100% { transform: scale(0.5); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        .loading-text { margin-top: 1.5rem; font-size: 1rem; font-weight: 500; color: var(--text-secondary); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        @media (max-width: 900px) {
+            body { padding: 0; }
+            .widget-container { margin: 0; border-radius: 0; border: none; min-height: 100vh; }
+            .widget-main { grid-template-columns: 1fr; }
+            .creation-panel { border-right: none; border-bottom: 1px solid var(--border-color); }
+        }
+        @media (max-width: 600px) {
+            .panel { padding: 1.5rem; }
+            .widget-header { padding: 1rem; flex-direction: column; }
+            .header-right-panel { justify-content: center; width: 100%; padding-top: 1rem; }
+            .footer-content { flex-direction: column; text-align: center; }
+            .action-buttons { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="widget-container">
+        <header class="widget-header">
+            <div class="widget-header-content">
+                <h1 class="widget-title" id="mainTitle">
+                    <span class="status-icon">science</span>
+                    Laboratorio de Prompts
+                </h1>
+                <p class="widget-subtitle" id="mainSubtitle">Perfeccione sus instrucciones para IA basándose en técnicas probadas.</p>
+            </div>
+            <div class="header-right-panel">
+                <div class="widget-status-indicators">
+                    <div class="status-indicator" id="aiStatus">
+                        <span class="status-icon">psychology</span>
+                        <span>IA</span>
+                        <div class="status-dot disconnected" id="aiStatusDot" title="IA no configurada"></div>
+                    </div>
+                    <div class="status-indicator" id="scormStatus">
+                        <span class="status-icon">school</span>
+                        <span>LMS</span>
+                        <div class="status-dot disconnected" id="scormStatusDot" title="Modo sin conexión"></div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="infoButton" class="header-button" title="Información y créditos">
+                        <span class="material-symbols-outlined">info</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="instructions-panel">
+            <h3>Instrucciones de la actividad</h3>
+            <ol class="instructions-list">
+                <li>Seleccione una de las técnicas de prompting de la lista desplegable.</li>
+                <li>Escriba una instrucción o prompt en el área de texto, intentando aplicar la técnica seleccionada.</li>
+                <li>Presione el botón "Corregir mi prompt" para recibir un análisis de la IA.</li>
+                <li>Si lo desea, puede solicitar un refinamiento adicional para explorar otras alternativas de mejora.</li>
+            </ol>
+        </div>
+
+        <main class="widget-main" id="widgetMain">
+            <div class="panel creation-panel">
+                <h2 class="panel-title"><span class="paw-icon">edit_note</span>Panel de creación</h2>
+                <div class="form-group">
+                    <label for="techniqueSelector">
+                        <span class="paw-icon">checklist</span>
+                        1. Seleccione la técnica a practicar:
+                    </label>
+                    <select id="techniqueSelector" class="form-select"></select>
+                </div>
+                <div class="form-group">
+                    <label for="userPrompt">
+                        <span class="paw-icon">edit</span>
+                        2. Escriba el prompt que desea mejorar:
+                    </label>
+                    <textarea id="userPrompt" class="form-textarea" placeholder="Ej: '¿Cómo ahorro dinero?'"></textarea>
+                </div>
+                <button id="correctButton" class="button button-primary">
+                    <span class="paw-icon">auto_fix_high</span>
+                    Corregir mi prompt
+                </button>
+            </div>
+            
+            <div class="panel feedback-panel">
+                <h2 class="panel-title"><span class="paw-icon">plagiarism</span>Análisis y corrección</h2>
+                <div id="feedbackContainer" class="feedback-container">
+                    <div class="feedback-placeholder">
+                        <p>Aquí aparecerá el prompt corregido y la explicación detallada de las mejoras.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="widget-footer" id="widgetFooter">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="https://vti-ia.uchile.cl/wp-content/uploads/2025/06/Diseno-sin-titulo-4.png" alt="Logo VTI Universidad de Chile" onerror="this.style.display='none'">
+                </div>
+                <div class="footer-credits">
+                    <p class="footer-line-1">
+                        Creado con <span class="footer-icon" style="color: #e25555;">favorite</span> en la Universidad de Chile e impulsado por 
+                        <span class="footer-icon">psychology</span>
+                        (OpenAI GPT-4o-mini)
+                    </p>
+                    <div class="footer-details">
+                        <strong>Contenido académico y dirección de proyecto:</strong> Francisco Sereño<br>
+                        <strong>Asistencia en desarrollo y IA generativa:</strong> Google Gemini & Claude Sonnet<br>
+                        Versión: 7.0 (Standalone con IA OpenAI) - Julio 2025
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Modals -->
+        <div id="infoModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" data-modal-id="infoModal">&times;</span>
+                <h3 id="infoModalTitle" class="modal-title"></h3>
+                <div id="infoModalBody" class="modal-body"></div>
+            </div>
+        </div>
+        <div id="techniqueModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" data-modal-id="techniqueModal">&times;</span>
+                <h3 id="techniqueModalTitle" class="modal-title"></h3>
+                <div id="techniqueModalBody" class="modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- CONFIGURACIÓN DE IA ---
+        const AI_CONFIG = {
+            API_KEY: "", // DEJE ESTA CADENA VACÍA, CANVAS LA PROPORCIONARÁ
+            API_URL: "https://api.openai.com/v1/chat/completions",
+            MODEL: "gpt-4o-mini"
+        };
+
+        // --- REFERENCIAS AL DOM ---
+        const techniqueSelector = document.getElementById('techniqueSelector');
+        const userPrompt = document.getElementById('userPrompt');
+        const correctButton = document.getElementById('correctButton');
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        const infoButton = document.getElementById('infoButton');
+        const infoModal = document.getElementById('infoModal');
+        const techniqueModal = document.getElementById('techniqueModal');
+        const aiStatusDot = document.getElementById('aiStatusDot');
+
+        // --- ESTADO DE LA APLICACIÓN ---
+        let currentCorrectedPrompt = null;
+        let currentTechniqueKey = null;
+
+        // --- DATOS Y CONTENIDOS ---
+        const infoContent = `
+            <div class="info-section">
+                <h4>Acerca del recurso y sus principios</h4>
+                <p>Esta es una actividad interactiva diseñada para la práctica y evaluación de habilidades en la redacción de prompts para inteligencia artificial, basada en los siguientes principios:</p>
+                <ul>
+                    <li><strong>Aprendizaje activo y constructivista:</strong> concebimos esta herramienta como un "dojo" o taller práctico. El aprendizaje no se logra mediante la simple lectura, sino a través de la experimentación, el ensayo y el error, y la reflexión guiada.</li>
+                    <li><strong>Retroalimentación para la mejora (feedback formativo):</strong> el objetivo principal del análisis no es calificar, sino orientar. La retroalimentación busca ser un andamiaje que permita al usuario identificar áreas de mejora y comprender los fundamentos de una instrucción efectiva.</li>
+                    <li><strong>Proceso iterativo de refinamiento:</strong> la herramienta replica el ciclo de trabajo real con IA, permitiendo una corrección inicial y, opcionalmente, un refinamiento posterior para explorar alternativas y profundizar en la mejora.</li>
+                    <li><strong>Conexión teoría-práctica:</strong> tras cada análisis, se ofrece la posibilidad de explorar la definición, propósito y funcionamiento de la técnica aplicada, fortaleciendo la comprensión conceptual.</li>
+                    <li><strong>IA como asistente cognitivo:</strong> la inteligencia artificial no es solo la tecnología subyacente, sino un socio en el proceso de aprendizaje. Actúa como un experto que ofrece un modelo de desempeño y una justificación de sus decisiones, promoviendo así el desarrollo de la metacognición.</li>
+                    <li><strong>Ética y seguridad integradas:</strong> el asistente opera bajo estrictas directrices de comportamiento ético. Se han implementado filtros y reglas para prevenir la generación de contenido inadecuado y para promover un uso responsable y seguro de la tecnología de IA.</li>
+                </ul>
+            </div>
+            <div class="info-section">
+                <h4>Autoría académica y desarrollo</h4>
+                <p>
+                    <strong>Francisco Sereño</strong><br>
+                    Profesor, Universidad de Chile<br>
+                    Doctor(c) en Educación, Universitat de Barcelona
+                </p>
+            </div>
+            <div class="info-section">
+                <h4>Asistencia de inteligencia artificial</h4>
+                <ul>
+                    <li><strong>OpenAI GPT-4o-mini:</strong> responsable del análisis y generación de retroalimentación en tiempo real.</li>
+                    <li><strong>Google Gemini:</strong> utilizado en las fases de refinamiento de la lógica de la aplicación, depuración de código y estructuración de las respuestas JSON.</li>
+                    <li><strong>Claude Sonnet (Anthropic):</strong> colaboró en el diseño inicial de la interfaz de usuario y en la generación de los primeros contenidos y estilos CSS del prototipo.</li>
+                </ul>
+            </div>`;
+        const techniques = {
+            'zero-shot': { name: 'Ser más específico (zero-shot)', placeholder: 'Ej: ayúdame con mi trabajo.' },
+            'role': { name: 'Asignar un rol (role prompting)', placeholder: 'Ej: dame consejos de ejercicio.' },
+            'contextual': { name: 'Dar contexto (contextual prompting)', placeholder: 'Ej: ¿cómo puedo organizar mi plata?' },
+            'chain-of-thought': { name: 'Pensar paso a paso (chain of thought)', placeholder: 'Ej: ¿debería renunciar?' },
+            'tree-of-thoughts': { name: 'Explorar varias opciones (tree of thoughts)', placeholder: 'Ej: ideas para mi aniversario.' }
+        };
+        const techniqueDetails = {
+            'zero-shot': {
+                title: 'Técnica: Ser más específico (Zero-Shot Prompting)',
+                definition: 'Consiste en dar una instrucción directa y clara a la IA, sin proporcionarle ejemplos previos (de ahí el "zero-shot" o "cero intentos"). Es la forma más básica y fundamental de prompting.',
+                description: 'Su propósito es obtener una respuesta rápida y concisa a una tarea bien definida. Es ideal para tareas simples como resúmenes, traducciones, o respuestas a preguntas directas, pero su eficacia disminuye con la complejidad de la solicitud.',
+                explanation: 'Funciona al delimitar con precisión qué se espera de la IA. Al usar verbos de acción claros (resume, traduce, compara), definir un formato de salida (ej. "en tres puntos", "en una tabla") y especificar una audiencia (ej. "para un niño de 10 años"), se reduce la ambigüedad y se guía a la IA hacia el resultado deseado.'
+            },
+            'role': {
+                title: 'Técnica: Asignar un rol (Role Prompting)',
+                definition: 'Consiste en instruir a la IA para que adopte una "personalidad" o un rol de experto específico antes de realizar una tarea.',
+                description: 'Se utiliza para que la IA genere respuestas con un tono, estilo y nivel de conocimiento particular. Es muy útil para obtener consejos de expertos, redactar textos con un estilo definido (ej. formal, creativo, técnico) o simular conversaciones.',
+                explanation: 'Al asignarle un rol (ej. "Actúa como un nutricionista deportivo"), la IA accede a la información y patrones de lenguaje asociados a esa profesión en sus datos de entrenamiento. Esto le permite generar respuestas más coherentes, detalladas y ajustadas al contexto del rol, superando las respuestas genéricas.'
+            },
+            'contextual': {
+                title: 'Técnica: Dar contexto (Contextual Prompting)',
+                definition: 'Implica proporcionar a la IA información de fondo relevante y detallada sobre la situación o problema antes de formular la pregunta principal.',
+                description: 'Es fundamental cuando se necesita una respuesta personalizada y no genérica. Se usa para resolver problemas personales, obtener recomendaciones basadas en datos específicos o analizar situaciones complejas.',
+                explanation: 'La IA utiliza el contexto proporcionado como la base principal para su razonamiento. Al separar claramente "Contexto" y "Pregunta", se le indica a la IA que debe fundamentar su respuesta en los datos entregados, lo que resulta en soluciones más precisas, relevantes y aplicables a la situación particular del usuario.'
+            },
+            'chain-of-thought': {
+                title: 'Técnica: Pensar paso a paso (Chain of Thought)',
+                definition: 'Consiste en instruir a la IA para que no solo dé una respuesta final, sino que también desglose su proceso de razonamiento en una secuencia de pasos lógicos.',
+                description: 'Es especialmente útil para problemas complejos que requieren lógica, cálculo o inferencias en múltiples etapas. Permite a la IA "pensar en voz alta", lo que a menudo conduce a conclusiones más precisas y permite al usuario verificar el razonamiento.',
+                explanation: 'Al forzar a la IA a seguir una "cadena de pensamiento", se evita que salte a conclusiones apresuradas y erróneas. Este método descompone un problema grande en sub-problemas más pequeños y manejables, mejorando significativamente el rendimiento en tareas de razonamiento matemático, lógico y de planificación.'
+            },
+            'tree-of-thoughts': {
+                title: 'Técnica: Explorar varias opciones (Tree of Thoughts)',
+                definition: 'Es una técnica avanzada donde se le pide a la IA que genere múltiples líneas de pensamiento o soluciones (las "ramas" del árbol), las evalúe según ciertos criterios y luego sintetice una respuesta final.',
+                description: 'Se utiliza para problemas que no tienen una única solución correcta, como la planificación estratégica, la lluvia de ideas creativa o la toma de decisiones complejas. Fomenta la exploración y la comparación de alternativas.',
+                explanation: 'A diferencia de Chain of Thought que sigue un solo camino, Tree of Thoughts explora varios caminos en paralelo. Al pedirle que genere, por ejemplo, tres planes diferentes y los evalúe, se le obliga a considerar el problema desde múltiples ángulos, lo que resulta en soluciones más robustas, creativas y mejor fundamentadas.'
+            },
+            'refinement': {
+                title: 'Proceso: Refinamiento de Prompts',
+                definition: 'El refinamiento no es una técnica única, sino un proceso iterativo de mejora continua de un prompt. Se basa en analizar la respuesta de la IA y ajustar la instrucción original para obtener un resultado progresivamente mejor.',
+                description: 'Es un metahabilidad crucial en el uso de la IA. Se aplica cuando la primera respuesta no es satisfactoria y se necesita guiar a la IA con mayor precisión. Es la clave para pasar de resultados genéricos a resultados expertos y altamente personalizados.',
+                explanation: 'Funciona como un diálogo. Cada refinamiento es una nueva instrucción que corrige el rumbo. Al solicitar alternativas (ej. "ahora hazlo más formal", "ahora enfócate en el aspecto económico", "ahora preséntalo en una tabla"), el usuario actúa como un director, guiando a la IA hacia el resultado exacto que necesita.'
+            }
+        };
+
+        // --- FUNCIONES DE IA Y CORRECCIÓN ---
+
+        function buildAIPrompt(techniqueName, originalPrompt, isRefinement = false) {
+            const commonRules = `
+                **REGLAS DE COMPORTAMIENTO ESTRICTAS:**
+                - Tu rol es el de un asistente educativo experto y ético.
+                - NUNCA generes contenido que sea ofensivo, discriminatorio, sexista, racista, violento, o que contenga sesgos de cualquier tipo.
+                - NUNCA respondas a prompts de usuario que contengan lenguaje inapropiado, insultos, o que soliciten contenido no ético. En su lugar, responde con un mensaje indicando que no puedes procesar esa solicitud.
+                - Mantén siempre un tono profesional, respetuoso y constructivo.
+                - No des información personal ni opines sobre temas controvertidos.`;
+
+            let taskInstructions = '';
+
+            if (isRefinement) {
+                taskInstructions = `
+                    **TAREA DE REFINAMIENTO:**
+                    Un estudiante ha recibido una primera corrección de su prompt. Ahora quiere explorar más alternativas.
+                    El prompt ya mejorado es: "${originalPrompt}".
+
+                    Tu tarea es la siguiente:
+                    1. En el campo "corrected_prompt", genera tres nuevas versiones refinadas del prompt. Cada versión debe explorar un ángulo diferente para mejorarlo (ej. mayor detalle, un formato diferente, un enfoque creativo). Formatea estas tres versiones como una sola cadena de texto, separadas por un salto de línea y numeradas (ej. "1. ... \\n2. ... \\n3. ...").
+                    2. Escribe una explicación clara de por qué estas nuevas versiones son alternativas valiosas. Esta explicación debe contener exactamente tres puntos o viñetas, cada una explicando el valor de una de las versiones refinadas que propusiste.
+                    3. La retroalimentación inicial y la lectura sugerida no son necesarias en esta etapa.
+                `;
+            } else {
+                taskInstructions = `
+                    **TAREA PRINCIPAL:**
+                    Eres un experto en "prompt engineering" y tu tarea es ayudar a un estudiante a mejorar su instrucción para una IA.
+                    El estudiante quiere aplicar la técnica: "${techniqueName}".
+                    El prompt original del estudiante es: "${originalPrompt}".
+
+                    Tu tarea es la siguiente:
+                    1. Analiza el prompt original y su intención.
+                    2. Crea una versión mejorada del prompt que aplique de manera ejemplar la técnica seleccionada. El prompt mejorado debe ser práctico y listo para usar.
+                    3. Escribe una retroalimentación breve sobre por qué el prompt original es débil. Esta retroalimentación debe contener exactamente tres puntos o viñetas.
+                    4. Escribe una explicación clara de por qué el nuevo prompt es mejor. Esta explicación debe contener exactamente tres puntos o viñetas que detallen cómo se aplicó la técnica.
+                    5. Sugiere una lectura académica o un artículo de blog de alta calidad y de una fuente reputada (con título y URL válido y funcional) para profundizar en la técnica de prompting seleccionada. **Prioriza recursos en castellano (español) siempre que sea posible.**
+                `;
+            }
+
+            const jsonStructure = isRefinement 
+                ? `{ "corrected_prompt": "string", "explanation": ["string", "string", "string"] }`
+                : `{ "initial_feedback": ["string", "string", "string"], "corrected_prompt": "string", "explanation": ["string", "string", "string"], "suggested_reading": { "title": "string", "url": "string" } }`;
+
+            return `${commonRules}\n${taskInstructions}\nDevuelve tu respuesta SÓLO como un objeto JSON válido, sin texto antes ni después. La estructura debe ser:\n${jsonStructure}`;
+        }
+
+        async function callOpenAI(modelPrompt) {
+            const payload = {
+                model: AI_CONFIG.MODEL,
+                messages: [{ role: "user", content: modelPrompt }],
+                response_format: { type: "json_object" }
+            };
+
+            const response = await fetch(AI_CONFIG.API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${AI_CONFIG.API_KEY}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`Error de la API de OpenAI: ${response.status} ${response.statusText} - ${errorBody}`);
+            }
+
+            const result = await response.json();
+
+            if (result.choices && result.choices.length > 0 && result.choices[0].message.content) {
+                const rawText = result.choices[0].message.content;
+                const jsonText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                return JSON.parse(jsonText);
+            } else {
+                throw new Error("La respuesta de la IA no contiene contenido válido o el formato es incorrecto.");
+            }
+        }
+
+        async function handleCorrection() {
+            currentTechniqueKey = techniqueSelector.value;
+            const originalPrompt = userPrompt.value.trim();
+            
+            if (!originalPrompt) {
+                alert('Por favor, ingrese un prompt para corregir.');
+                return;
+            }
+
+            const inappropriateKeywords = ['matar', 'suicidio', 'odio', 'racista', 'sexista'];
+            if (inappropriateKeywords.some(keyword => originalPrompt.toLowerCase().includes(keyword))) {
+                renderError("La solicitud no puede ser procesada debido a que contiene lenguaje inapropiado.");
+                return;
+            }
+
+            setLoading(true);
+            updateStatusDot('connecting');
+
+            const modelPrompt = buildAIPrompt(techniques[currentTechniqueKey].name, originalPrompt);
+
+            try {
+                const correction = await callOpenAI(modelPrompt);
+                currentCorrectedPrompt = correction.corrected_prompt; 
+                renderFeedback(
+                    correction.initial_feedback, 
+                    correction.corrected_prompt, 
+                    correction.explanation, 
+                    correction.suggested_reading
+                );
+                updateStatusDot('connected');
+            } catch (error) {
+                console.error("Error al contactar la IA:", error);
+                renderError("No se pudo obtener una respuesta de la IA. Verifique que la clave de API sea correcta y que tenga fondos. Detalles: " + error.message);
+                updateStatusDot('disconnected');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function handleRefinementRequest() {
+            const refineButton = document.getElementById('refineButton');
+            if (!refineButton || !currentCorrectedPrompt) return;
+
+            refineButton.disabled = true;
+            refineButton.innerHTML = `<span class="paw-icon">hourglass_top</span>Refinando...`;
+
+            const modelPrompt = buildAIPrompt(null, currentCorrectedPrompt, true);
+
+            try {
+                const refinement = await callOpenAI(modelPrompt);
+                renderRefinementFeedback(refinement.corrected_prompt, refinement.explanation);
+            } catch (error) {
+                console.error("Error en el refinamiento:", error);
+                refineButton.innerHTML = 'Error al refinar';
+                refineButton.disabled = false;
+            }
+        }
+
+
+        // --- FUNCIONES DE RENDERIZADO Y UI ---
+        function setLoading(isLoading) {
+            correctButton.disabled = isLoading;
+            if (isLoading) {
+                feedbackContainer.innerHTML = `<div class="feedback-placeholder"><div class="loading-icon-container"><div class="typing-indicator"><span></span><span></span><span></span></div><p class="loading-text">Contactando a la IA para el análisis...</p></div></div>`;
+            }
+        }
+
+        function isValidHttpUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === "http:" || url.protocol === "https:";
+            } catch (_) {
+                return false;  
+            }
+        }
+
+        function renderFeedback(initialFeedbackItems, correctedPrompt, explanationItems, suggestedReading) {
+            const initialFeedbackHtml = initialFeedbackItems.map(item => `<li>${item}</li>`).join('');
+            const explanationHtml = explanationItems.map(item => `<li>${item}</li>`).join('');
+            
+            let suggestedReadingHtml = '';
+            if (suggestedReading && suggestedReading.title && suggestedReading.url && isValidHttpUrl(suggestedReading.url)) {
+                suggestedReadingHtml = `
+                    <h3><span class="paw-icon">menu_book</span>Lectura sugerida para profundizar</h3>
+                    <div class="suggested-reading-wrapper">
+                        <p>
+                            Para aprender más sobre esta técnica, le recomendamos el siguiente recurso.
+                            <br><em>Nota: esta lectura es una sugerencia generada por IA. Se recomienda evaluar su pertinencia.</em>
+                        </p>
+                        <a href="${suggestedReading.url}" target="_blank" rel="noopener noreferrer">${suggestedReading.title}</a>
+                    </div>
+                `;
+            }
+
+            feedbackContainer.innerHTML = `
+                <div class="feedback-content">
+                    <h3><span class="paw-icon">comment</span>Retroalimentación del prompt original</h3>
+                    <div class="initial-feedback"><ul>${initialFeedbackHtml}</ul></div>
+                    
+                    <h3><span class="paw-icon">task_alt</span>Prompt mejorado</h3>
+                    <div class="corrected-prompt-wrapper">${correctedPrompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+                    
+                    <h3><span class="paw-icon">analytics</span>Análisis de la corrección</h3>
+                    <div class="explanation"><ul>${explanationHtml}</ul></div>
+                    
+                    ${suggestedReadingHtml}
+
+                    <div id="action-buttons-container" class="action-buttons">
+                        <button id="explainTechniqueButton" class="button button-secondary"><span class="paw-icon">help</span>Ver explicación de la técnica</button>
+                        <button id="refineButton" class="button button-secondary"><span class="paw-icon">auto_awesome</span>Solicitar refinamiento adicional</button>
+                    </div>
+                </div>`;
+            
+            document.getElementById('refineButton').addEventListener('click', handleRefinementRequest);
+            document.getElementById('explainTechniqueButton').addEventListener('click', () => showTechniqueExplanation(currentTechniqueKey));
+        }
+
+        function renderRefinementFeedback(refinedPrompts, explanationItems) {
+            const actionContainer = document.getElementById('action-buttons-container');
+            if (!actionContainer) return;
+
+            const explanationHtml = explanationItems.map(item => `<li>${item}</li>`).join('');
+
+            const refinementHtml = `
+                <h3><span class="paw-icon">filter_alt</span>Versiones Refinadas</h3>
+                <div class="corrected-prompt-wrapper">${refinedPrompts.replace(/\n/g, '<br>')}</div>
+                <h3><span class="paw-icon">rule</span>Análisis del Refinamiento</h3>
+                <div class="explanation"><ul>${explanationHtml}</ul></div>
+            `;
+            
+            actionContainer.innerHTML = refinementHtml + `<div class="action-buttons" style="grid-template-columns: 1fr;">
+                <button id="explainRefinementButton" class="button button-secondary"><span class="paw-icon">help</span>Ver explicación del refinamiento</button>
+            </div>`;
+            document.getElementById('explainRefinementButton').addEventListener('click', () => showTechniqueExplanation('refinement'));
+        }
+
+        function renderError(message) {
+            feedbackContainer.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+        
+        function populateSelector() {
+            for (const key in techniques) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = techniques[key].name;
+                techniqueSelector.appendChild(option);
+            }
+            updatePlaceholder();
+        }
+        
+        function updatePlaceholder() {
+            const selectedKey = techniqueSelector.value;
+            if (techniques[selectedKey]) {
+                userPrompt.placeholder = techniques[selectedKey].placeholder;
+            }
+        }
+        
+        function updateStatusDot(status) {
+            if (aiStatusDot) {
+                aiStatusDot.className = `status-dot ${status}`;
+                const titles = {
+                    'connected': 'IA Conectada',
+                    'disconnected': 'IA Desconectada o con Error',
+                    'connecting': 'Conectando con la IA...'
+                };
+                aiStatusDot.title = titles[status] || 'Estado desconocido';
+            }
+        }
+
+        // --- LÓGICA DE MODALES ---
+        function showInfoModal(title, content) {
+            document.getElementById('infoModalTitle').textContent = title;
+            document.getElementById('infoModalBody').innerHTML = content;
+            infoModal.style.display = 'block';
+        }
+
+        function showTechniqueExplanation(techniqueKey) {
+            const details = techniqueDetails[techniqueKey];
+            if (!details) return;
+
+            const modalTitle = document.getElementById('techniqueModalTitle');
+            const modalBody = document.getElementById('techniqueModalBody');
+
+            modalTitle.textContent = details.title;
+            modalBody.innerHTML = `
+                <div class="info-section">
+                    <h4>Definición</h4>
+                    <p>${details.definition}</p>
+                </div>
+                <div class="info-section">
+                    <h4>Descripción y propósito</h4>
+                    <p>${details.description}</p>
+                </div>
+                <div class="info-section">
+                    <h4>Explicación del funcionamiento</h4>
+                    <p>${details.explanation}</p>
+                </div>
+            `;
+            techniqueModal.style.display = 'block';
+        }
+
+        function initializeApp(){
+            populateSelector();
+            updateStatusDot('connected');
+            correctButton.disabled = false;
+        }
+
+        // --- EVENT LISTENERS ---
+        correctButton.addEventListener('click', handleCorrection);
+        techniqueSelector.addEventListener('change', () => {
+            updatePlaceholder();
+            feedbackContainer.innerHTML = `<div class="feedback-placeholder"><p>Aquí aparecerá el prompt corregido y la explicación detallada de las mejoras.</p></div>`;
+            currentCorrectedPrompt = null;
+        });
+        infoButton.addEventListener('click', () => showInfoModal('Información y créditos', infoContent));
+        
+        document.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const modalId = e.target.getAttribute('data-modal-id');
+                if(modalId) document.getElementById(modalId).style.display = 'none';
+            });
+        });
+        
+        window.addEventListener('click', (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
+
+        // --- INICIO ---
+        initializeApp();
+    });
+    </script>
+</body>
+</html>
