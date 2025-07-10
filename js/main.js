@@ -1,6 +1,6 @@
 /*
     ** Lógica Principal para el Laboratorio de Prompts **
-    Versión: 1.0
+    Versión: 1.2 (Corrección de API)
     Fecha: 10 de Julio, 2025
 
     **Autoría Académica y Dirección de Proyecto:**
@@ -313,8 +313,15 @@ document.addEventListener('DOMContentLoaded', function() {
         populateSelector();
         const scormConnected = scorm.init();
         updateStatusDot(scormStatusDot, scormConnected ? 'connected' : 'disconnected');
-        updateStatusDot(aiStatusDot, 'connected');
-        correctButton.disabled = false;
+        
+        if (!AI_CONFIG.API_KEY || AI_CONFIG.API_KEY === "INSERTE_AQUI_SU_CLAVE_DE_API_DE_OPENAI") {
+            updateStatusDot(aiStatusDot, 'disconnected');
+            renderError("Error de configuración: No se ha proporcionado una clave de API de OpenAI en el archivo js/config.js. La herramienta no puede funcionar.");
+            correctButton.disabled = true;
+        } else {
+            updateStatusDot(aiStatusDot, 'connected');
+            correctButton.disabled = false;
+        }
     }
 
     // --- EVENT LISTENERS ---
