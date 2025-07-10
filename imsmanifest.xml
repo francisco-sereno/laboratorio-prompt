@@ -20,6 +20,7 @@
     <metadata>
         <schema>ADL SCORM</schema>
         <schemaversion>2004 4th Edition</schemaversion>
+        <adlcp:location>metadata.xml</adlcp:location>
     </metadata>
 
     <organizations default="ORG-LAB-PROMPTS">
@@ -40,6 +41,7 @@
             <file href="js/scorm_api.js"/>
             <file href="README.md"/>
             <file href="LICENSE.md"/>
+            <file href="metadata.xml"/>
         </resource>
     </resources>
 
