@@ -1,6 +1,6 @@
 /*
     ** Archivo de Configuración para el Laboratorio de Prompts **
-    Versión: 1.0
+    Versión: 1.2 (Corrección de API)
     Fecha: 10 de Julio, 2025
 
     **Autoría Académica y Dirección de Proyecto:**
@@ -12,12 +12,18 @@
 
 // --- CONFIGURACIÓN DE IA ---
 const AI_CONFIG = {
-    API_KEY: "", // DEJE ESTA CADENA VACÍA, CANVAS LA PROPORCIONARÁ
+    //================================================================================
+    // CRÍTICO: Inserte su clave de API de OpenAI aquí.
+    // La clave debe comenzar con "sk-...". Sin una clave válida, la herramienta no funcionará.
+    // Reemplace el texto entre las comillas. Ejemplo: API_KEY: "sk-xxxxxxxxxxxxxxxxxxxxxxxx"
+    //================================================================================
+    API_KEY: " ",
+
     API_URL: "https://api.openai.com/v1/chat/completions",
     MODEL: "gpt-4o-mini"
 };
 
-// --- DATOS Y CONTENIDOS ---
+// --- DATOS Y CONTENIDOS (sin cambios) ---
 const INFO_CONTENT = `
     <div class="info-section">
         <h4>Acerca del recurso y sus principios</h4>
@@ -94,3 +100,10 @@ const TECHNIQUE_DETAILS = {
         explanation: 'Funciona como un diálogo. Cada refinamiento es una nueva instrucción que corrige el rumbo. Al solicitar alternativas (ej. "ahora hazlo más formal", "ahora enfócate en el aspecto económico", "ahora preséntalo en una tabla"), el usuario actúa como un director, guiando a la IA hacia el resultado exacto que necesita.'
     }
 };
+
+// Función de utilidad que se pedía en una versión anterior. Se mantiene por completitud.
+function getLocalizedText(key, lang = 'es') {
+    // En esta versión no se usa, pero se mantiene la estructura.
+    const UI_TEXTS = {}; 
+    return (UI_TEXTS[lang] && UI_TEXTS[lang][key]) || key;
+}
